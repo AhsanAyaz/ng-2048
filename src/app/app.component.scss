@@ -1,0 +1,23 @@
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+  --block-width: 78px;
+}
+
+
+.tile {
+  position: absolute;
+  transition: transform 800ms ease-in-out;
+}
+
+$rows: 0, 1, 2, 3;
+$cols: 0, 1, 2, 3;
+
+@each $row in $rows {
+  @each $col in $cols {
+    .tile-position-#{$row}-#{$col} {
+      transform: translateX(calc(var(--block-width) * $col)) translateY(calc(var(--block-width) * $row));
+    }
+  }
+}

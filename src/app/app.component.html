@@ -1,3 +1,62 @@
-<h1 style="text-align: center;">
-  2048
-</h1>
+<div class="w-full h-full flex flex-col justify-center items-center">
+  <div class="score">
+    <div class="text-md">
+      Score : {{(vm$ | async)?.score}}
+    </div>
+  </div>
+  <div class="game w-[312px] h-[312px] relative">
+    <div class="grid-container absolute z-10">
+      <div class="row grid grid-cols-4" *ngFor="let row of (vm$ | async)?.grid; let rowIndex = index; trackBy: trackByFn">
+        <!-- <div
+          class="z-20 col w-12 h-12 flex items-center justify-center border border-black tile {{'tile-position-' + (rowIndex + 0) + '-' + (colIndex + 0)}}"
+          *ngFor="let col of row; let colIndex = index; trackBy: trackByFn"
+          [class.bg-gray-100]="col === 2"
+          [class.bg-orange-100]="col === 4"
+          [class.bg-orange-200]="col === 8"
+          [class.bg-orange-300]="col === 16"
+          [class.bg-orange-400]="col === 32"
+          [class.bg-orange-500]="col === 64"
+          [class.bg-orange-600]="col === 128"
+          [class.bg-orange-700]="col === 256"
+          [class.bg-orange-800]="col === 512"
+          [class.bg-orange-900]="col === 1024">
+          <div class="text-2xl">
+            {{col ? col : ''}}
+          </div>
+        </div> -->
+        <div
+          class="col w-12 h-12 flex items-center justify-center border border-black"
+          *ngFor="let col of row; let colIndex = index; trackBy: trackByFn">
+          <div class="text-2xl">
+            &nbsp;
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="tiles absolute z-20">
+      <div
+        *ngFor="let tile of (tiles$ | async); trackBy: tileTrackByFn"
+        class="w-12 h-12 flex items-center justify-center border border-black tile {{'tile-position-' + (tile.row + 0) + '-' + (tile.col + 0)}}"
+        [class.bg-gray-100]="tile.value === 2"
+        [class.bg-orange-100]="tile.value === 4"
+        [class.bg-orange-200]="tile.value === 8"
+        [class.bg-orange-300]="tile.value === 16"
+        [class.bg-orange-400]="tile.value === 32"
+        [class.bg-orange-500]="tile.value === 64"
+        [class.bg-orange-600]="tile.value === 128"
+        [class.bg-orange-700]="tile.value === 256"
+        [class.bg-orange-800]="tile.value === 512"
+        [class.bg-orange-900]="tile.value === 1024">
+        <div class="text-2xl">
+          {{tile.value}}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="flex">
+    <button class="m-2 px-2 bg-purple-300 rounded-lg text-center cursor-pointer hover:opacity-80" (click)="moveLeft()">Move Left</button>
+    <button class="m-2 px-2 bg-purple-300 rounded-lg text-center cursor-pointer hover:opacity-80" (click)="moveRight()">Move Right</button>
+    <button class="m-2 px-2 bg-purple-300 rounded-lg text-center cursor-pointer hover:opacity-80" (click)="moveTop()">Move Top</button>
+    <button class="m-2 px-2 bg-purple-300 rounded-lg text-center cursor-pointer hover:opacity-80" (click)="moveBottom()">Move Bottom</button>
+  </div>
+</div>
