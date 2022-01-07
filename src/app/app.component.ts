@@ -49,19 +49,19 @@ export class AppComponent implements OnInit {
     return index;
   }
 
-  moveLeft() {
+  @HostListener('swipeleft', ['$event']) moveLeft() {
     this.store.moveLeft();
     this.store.generateRandomNumber();
   }
-  moveRight() {
+  @HostListener('swiperight', ['$event']) moveRight() {
     this.store.moveRight();
     this.store.generateRandomNumber();
   }
-  moveTop() {
+  @HostListener('swipeup', ['$event']) moveTop() {
     this.store.moveTop();
     this.store.generateRandomNumber();
   }
-  moveBottom() {
+  @HostListener('swipedown', ['$event']) moveBottom() {
     this.store.moveBottom();
     this.store.generateRandomNumber();
   }
