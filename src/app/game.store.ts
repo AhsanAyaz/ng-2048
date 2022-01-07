@@ -1,19 +1,13 @@
 import { Injectable } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
+import Tile from './tile';
 
 export interface GameState {
   /** The tiles state. */
-  grid: number[][];
+  grid: Tile[][];
   /** The current score */
   score: number;
 }
-
-export interface Tile {
-  row: number;
-  col: number;
-  value: number;
-}
-
 @Injectable({
   providedIn: 'root',
 })
@@ -22,30 +16,44 @@ export class GameStore extends ComponentStore<GameState> {
     // set defaults
     super({
       score: 0,
-      grid: [
-        [0, 2, 0, 0],
-        [2, 2, 0, 0],
-        [0, 0, 0, 0],
-        [0, 4, 4, 8],
-      ],
+      grid: new Array(4).fill(0).map((_, rowIndex) =>
+        new Array(4).fill(0).map((_, colIndex) => {
+          return new Tile(0, {
+            position: { row: rowIndex, col: colIndex },
+          });
+        })
+      ),
     });
   }
 
-  private transpose = (m: number[][]) => m[0].map((x, i) => m.map((x) => x[i]));
+  private transpose = (m: Tile[][]) =>
+    m[0].map((x, i) =>
+      m.map((x) => {
+        const tile = x[i];
+        return new Tile(tile.value, { ...tile.meta });
+      })
+    );
+
+  private coordinatesMatch = (
+    from: { row: number; col: number },
+    to: { row: number; col: number }
+  ) => {
+    return from?.row === to.row && from?.col === to.col;
+  };
 
   // *********** Updaters *********** //
 
   readonly setScore = this.updater((state, value: number) => ({
     ...state,
-    score: state.score || state.score < value ? value : state.score || 0,
+    score: state.score < value ? value : state.score || 0,
   }));
 
   readonly generateRandomNumber = this.updater((state) => {
-    const emptyTiles: number[][] = [];
+    const emptyTiles: Tile[] = [];
     state.grid.forEach((row, rowIndex) => {
-      row.forEach((col, colIndex) => {
-        if (col === 0) {
-          emptyTiles.push([rowIndex, colIndex]);
+      row.forEach((tile, colIndex) => {
+        if (tile.value === 0) {
+          emptyTiles.push(tile);
         }
       });
     });
@@ -53,14 +61,22 @@ export class GameStore extends ComponentStore<GameState> {
       return state;
     }
     const randomIndex = Math.floor(Math.random() * emptyTiles.length);
-    const [row, col] = emptyTiles[randomIndex];
+    const { row, col } = emptyTiles[randomIndex].meta.position;
     return {
       ...state,
       grid: [
         ...state.grid.slice(0, row),
         [
           ...state.grid[row].slice(0, col),
-          Math.random() > 0.9 ? 4 : 2,
+          Math.random() > 0.9
+            ? new Tile(4, {
+                position: { row, col },
+                isNew: true,
+              })
+            : new Tile(2, {
+                position: { row, col },
+                isNew: true,
+              }),
           ...state.grid[row].slice(col + 1),
         ],
         ...state.grid.slice(row + 1),
@@ -68,139 +84,126 @@ export class GameStore extends ComponentStore<GameState> {
     };
   });
 
-  readonly moveLeft = this.updater((state) => {
-    const grid = [...state.grid];
-    for (let rowIndex = 0; rowIndex < grid.length; rowIndex++) {
+  private transformGrid = (
+    grid: Tile[][],
+    { isTranspose = false, isReverse = false }
+  ) => {
+    for (
+      let rowIndex = !isReverse ? 0 : grid.length - 1;
+      !isReverse ? rowIndex < grid.length : rowIndex >= 0;
+      !isReverse ? rowIndex++ : rowIndex--
+    ) {
       const row = grid[rowIndex];
-      for (let colIndex = row.length - 1; colIndex >= 0; colIndex--) {
-        if (row[colIndex] === 0) {
+      for (let colIndex = 0; colIndex < row.length; colIndex++) {
+        const tile = row[colIndex];
+        if (tile.value === 0) {
           continue;
         }
-        let nextColIndex = colIndex - 1;
-        while (nextColIndex >= 0) {
-          if (row[nextColIndex] === 0) {
-            nextColIndex--;
+        let nextColIndex = colIndex + (!isReverse ? 1 : -1);
+        while (!isReverse ? nextColIndex < row.length : nextColIndex >= 0) {
+          const nextTile = row[nextColIndex];
+          if (nextTile.value === 0) {
+            if (!isReverse) {
+              nextColIndex++;
+            } else {
+              nextColIndex--;
+            }
             continue;
           }
-          if (row[colIndex] === row[nextColIndex]) {
-            grid[rowIndex][nextColIndex] = row[colIndex] * 2;
-            grid[rowIndex][colIndex] = 0;
-            this.setScore(grid[rowIndex][nextColIndex]);
+          if (tile.value === nextTile.value) {
+            const newTile = new Tile(tile.value * 2, {
+              position: {
+                row: isTranspose ? nextColIndex : rowIndex,
+                col: isTranspose ? rowIndex : nextColIndex,
+              },
+              merged: true,
+            });
+            grid[rowIndex][nextColIndex] = newTile;
+            grid[rowIndex][colIndex] = new Tile(0, {
+              position: {
+                row: isTranspose ? colIndex : rowIndex,
+                col: isTranspose ? rowIndex : colIndex,
+              },
+            });
+            this.setScore(newTile.value);
             colIndex = nextColIndex;
           }
           break;
         }
       }
-      const filtered = grid[rowIndex].filter((col) => col !== 0);
+      const filtered = grid[rowIndex].filter((tile) => tile.value !== 0);
       const missing = 4 - filtered.length;
-      const zeros = Array(missing).fill(0);
-      grid[rowIndex] = [...filtered, ...zeros];
+      const zeros = Array(missing).fill(
+        new Tile(0, {
+          position: { row: rowIndex, col: 0 },
+        })
+      );
+      const combo = !isReverse
+        ? [...zeros, ...filtered]
+        : [...filtered, ...zeros];
+      grid[rowIndex] = combo.map((tile, index) => {
+        if (tile.value !== 0) {
+          return new Tile(tile.value, {
+            ...tile.meta,
+            position: {
+              row: isTranspose ? index : rowIndex,
+              col: isTranspose ? rowIndex : index,
+            },
+          });
+        }
+        return new Tile(0, {
+          ...tile.meta,
+          position: {
+            row: isTranspose ? index : rowIndex,
+            col: isTranspose ? rowIndex : index,
+          },
+          isNew: false,
+        });
+      });
     }
+    return grid;
+  };
+
+  readonly moveLeft = this.updater((state) => {
+    const transformed = this.transformGrid([...state.grid], {
+      isReverse: true,
+    });
     return {
       ...state,
-      grid,
+      grid: transformed,
     };
   });
 
   readonly moveRight = this.updater((state) => {
-    const grid = [...state.grid];
-    for (let rowIndex = 0; rowIndex < grid.length; rowIndex++) {
-      const row = grid[rowIndex];
-      for (let colIndex = 0; colIndex < row.length; colIndex++) {
-        if (row[colIndex] === 0) {
-          continue;
-        }
-        let nextColIndex = colIndex + 1;
-        while (nextColIndex <= row.length) {
-          if (row[nextColIndex] === 0) {
-            nextColIndex++;
-            continue;
-          }
-          if (row[colIndex] === row[nextColIndex]) {
-            grid[rowIndex][nextColIndex] = row[colIndex] * 2;
-            grid[rowIndex][colIndex] = 0;
-            this.setScore(grid[rowIndex][nextColIndex]);
-            colIndex = nextColIndex;
-          }
-          break;
-        }
-      }
-      const filtered = grid[rowIndex].filter((col) => col !== 0);
-      const missing = 4 - filtered.length;
-      const zeros = Array(missing).fill(0);
-      grid[rowIndex] = [...zeros, ...filtered];
-    }
+    const transformed = this.transformGrid([...state.grid], {});
     return {
       ...state,
-      grid,
+      grid: transformed,
     };
   });
 
   readonly moveTop = this.updater((state) => {
-    const grid = [...this.transpose(state.grid)];
-    for (let rowIndex = 0; rowIndex < grid.length; rowIndex++) {
-      const row = grid[rowIndex];
-      for (let colIndex = row.length - 1; colIndex >= 0; colIndex--) {
-        if (row[colIndex] === 0) {
-          continue;
-        }
-        let nextColIndex = colIndex - 1;
-        while (nextColIndex >= 0) {
-          if (row[nextColIndex] === 0) {
-            nextColIndex--;
-            continue;
-          }
-          if (row[colIndex] === row[nextColIndex]) {
-            grid[rowIndex][nextColIndex] = row[colIndex] * 2;
-            grid[rowIndex][colIndex] = 0;
-            this.setScore(grid[rowIndex][nextColIndex]);
-            colIndex = nextColIndex;
-          }
-          break;
-        }
-      }
-      const filtered = grid[rowIndex].filter((col) => col !== 0);
-      const missing = 4 - filtered.length;
-      const zeros = Array(missing).fill(0);
-      grid[rowIndex] = [...filtered, ...zeros];
-    }
+    const transposed = this.transpose([...state.grid]);
+    const transformed = this.transformGrid([...transposed], {
+      isTranspose: true,
+      isReverse: true,
+    });
+    const reverseTransposed = this.transpose(transformed);
     return {
       ...state,
-      grid: this.transpose(grid),
+      grid: reverseTransposed,
     };
   });
 
   readonly moveBottom = this.updater((state) => {
-    const grid = [...this.transpose(state.grid)];
-    for (let rowIndex = 0; rowIndex < grid.length; rowIndex++) {
-      const row = grid[rowIndex];
-      for (let colIndex = 0; colIndex < row.length; colIndex++) {
-        if (row[colIndex] === 0) {
-          continue;
-        }
-        let nextColIndex = colIndex + 1;
-        while (nextColIndex <= row.length) {
-          if (row[nextColIndex] === 0) {
-            nextColIndex++;
-            continue;
-          }
-          if (row[colIndex] === row[nextColIndex]) {
-            grid[rowIndex][nextColIndex] = row[colIndex] * 2;
-            grid[rowIndex][colIndex] = 0;
-            this.setScore(grid[rowIndex][nextColIndex]);
-            colIndex = nextColIndex;
-          }
-          break;
-        }
-      }
-      const filtered = grid[rowIndex].filter((col) => col !== 0);
-      const missing = 4 - filtered.length;
-      const zeros = Array(missing).fill(0);
-      grid[rowIndex] = [...zeros, ...filtered];
-    }
+    const transposed = this.transpose([...state.grid]);
+    const transformed = this.transformGrid([...transposed], {
+      isTranspose: true,
+    });
+    const reverseTransposed = this.transpose(transformed);
     return {
       ...state,
-      grid: this.transpose(grid),
+      grid: reverseTransposed,
     };
   });
 
@@ -214,16 +217,12 @@ export class GameStore extends ComponentStore<GameState> {
 
   readonly tiles$ = this.select(({ grid }) => {
     const tiles: Tile[] = [];
-    grid.forEach((row, rowIndex) => {
-      row.forEach((col, colIndex) => {
-        if (col === 0) {
+    grid.forEach((row) => {
+      row.forEach((tile) => {
+        if (tile.value === 0) {
           return;
         }
-        tiles.push({
-          row: rowIndex,
-          col: colIndex,
-          value: col,
-        });
+        tiles.push(tile);
       });
     });
     return tiles;

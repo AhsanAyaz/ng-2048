@@ -5,10 +5,9 @@
   --block-width: 78px;
 }
 
-
 .tile {
   position: absolute;
-  transition: transform 800ms ease-in-out;
+  transition: transform 200ms ease-in-out;
 }
 
 $rows: 0, 1, 2, 3;
@@ -17,7 +16,39 @@ $cols: 0, 1, 2, 3;
 @each $row in $rows {
   @each $col in $cols {
     .tile-position-#{$row}-#{$col} {
-      transform: translateX(calc(var(--block-width) * $col)) translateY(calc(var(--block-width) * $row));
+      transform: translate(calc(var(--block-width) * $col), calc(var(--block-width) * $row));
     }
+  }
+}
+
+.tile-merged > div {
+  z-index: 20;
+  animation: pop 200ms ease 100ms;
+}
+
+.tile-appear > div {
+  animation: appear 200ms ease-in-out 100ms;
+}
+
+@keyframes appear {
+  0% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
   }
 }

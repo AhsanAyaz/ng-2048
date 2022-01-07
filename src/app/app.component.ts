@@ -1,6 +1,7 @@
 import { Component, HostListener, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
-import { GameState, GameStore, Tile } from './game.store';
+import { GameState, GameStore } from './game.store';
+import Tile from './tile';
 
 @Component({
   selector: 'app-root',
@@ -36,10 +37,12 @@ export class AppComponent implements OnInit {
     this.tiles$ = this.store.tiles$;
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.store.generateRandomNumber();
+  }
 
   tileTrackByFn(index: number, tile: Tile) {
-    return `${tile.row}-${tile.col}`;
+    return tile.meta.id;
   }
 
   trackByFn(index: number) {
