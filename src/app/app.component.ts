@@ -1,6 +1,6 @@
 import { Component, HostListener, OnInit } from '@angular/core';
 import { delay, Observable } from 'rxjs';
-import { GameStates, GameStore } from './game.store';
+import { GameState, GameStates, GameStore } from './game.store';
 import Tile from './tile';
 import * as confetti from 'canvas-confetti';
 
@@ -13,10 +13,10 @@ export class AppComponent implements OnInit {
   rows = 4;
   cols = 4;
   grid: Array<Array<number>> = [];
-  score$: Observable<number>;
-  grid$: Observable<Tile[][]>;
-  tiles$: Observable<Tile[]>;
-  gameState$: Observable<GameStates>;
+  score$!: Observable<number>;
+  grid$!: Observable<Tile[][]>;
+  tiles$!: Observable<Tile[]>;
+  gameState$!: Observable<GameStates>;
   gameStates = GameStates;
   @HostListener('window:keydown', ['$event']) onKeyDown(event: KeyboardEvent) {
     switch (event.key) {
@@ -36,18 +36,7 @@ export class AppComponent implements OnInit {
         break;
     }
   }
-  constructor(private store: GameStore) {
-    this.tiles$ = this.store.tiles$;
-    this.score$ = this.store.score$;
-    this.grid$ = this.store.grid$;
-    this.gameState$ = this.store.gameState$;
-    this.gameState$.pipe(delay(200)).subscribe((gameState: GameStates) => {
-      if (gameState !== GameStates.WIN) {
-        return;
-      }
-      this.onWin();
-    });
-  }
+  constructor(private store: GameStore) {}
 
   onWin() {
     this.showConfetti();
@@ -79,7 +68,19 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.store.generateRandomNumber();
+    this.tiles$ = this.store.tiles$;
+    this.score$ = this.store.score$;
+    this.grid$ = this.store.grid$;
+    this.gameState$ = this.store.gameState$;
+    this.gameState$.pipe(delay(200)).subscribe((gameState: GameStates) => {
+      if (gameState !== GameStates.WIN) {
+        return;
+      }
+      this.onWin();
+    });
+    this.store.vm$.subscribe((state: GameState) => {
+      this.store.saveStateToStorage(state);
+    });
   }
 
   tileTrackByFn(_: number, tile: Tile) {

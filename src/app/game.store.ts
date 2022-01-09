@@ -28,17 +28,33 @@ const INITIAL_STATE: GameState = {
   ),
   gameState: GameStates.INITIALIZED,
 };
+INITIAL_STATE.grid[0][0].value = 2;
+INITIAL_STATE.grid[2][3].value = 2;
+
 @Injectable({
   providedIn: 'root',
 })
 export class GameStore extends ComponentStore<GameState> {
+  LOCAL_STORAGE_KEY = 'ng-2048-game-state';
   constructor() {
-    // set defaults
     super(INITIAL_STATE);
+    this.loadStateFromStorage();
   }
 
   restart() {
     this.setState(INITIAL_STATE);
+  }
+
+  saveStateToStorage(state: GameState) {
+    window.localStorage.setItem(this.LOCAL_STORAGE_KEY, JSON.stringify(state));
+  }
+
+  loadStateFromStorage() {
+    const state = window.localStorage.getItem(this.LOCAL_STORAGE_KEY);
+    if (!state) {
+      return;
+    }
+    this.setState(JSON.parse(state));
   }
 
   private transpose = (m: Tile[][]) =>
@@ -145,7 +161,6 @@ export class GameStore extends ComponentStore<GameState> {
               },
             });
             this.setScore(newTile.value);
-            // this.setScore(2048);
             colIndex = nextColIndex;
           }
           break;
@@ -247,4 +262,10 @@ export class GameStore extends ComponentStore<GameState> {
     });
     return tiles;
   });
+
+  readonly vm$ = this.select((state) => ({
+    grid: state.grid,
+    score: state.score,
+    gameState: state.gameState,
+  }));
 }

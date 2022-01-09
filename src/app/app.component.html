@@ -19,7 +19,7 @@
           Score : {{(score$ | async)}}
         </div>
       </div>
-      <div *ngSwitchDefault  class="game w-[312px] h-[312px] relative">
+      <div *ngSwitchDefault class="game w-[312px] h-[312px] relative mb-3">
         <div class="grid-container absolute z-10">
           <div class="row grid grid-cols-4" *ngFor="let row of (grid$ | async); let rowIndex = index; trackBy: trackByFn">
             <div
@@ -77,9 +77,10 @@
           Restart
         </button>
       </div>
-      <div class="mt-4">
-        <a class="text-xl text-red-700 text-center underline underline-offset-2" href="https://youtube.com/CodeWithAhsan">Code With Ahsan</a>
-      </div>
+      <button *ngSwitchDefault class="py-0.5 px-2 mb-2 rounded bg-indigo-500 text-white text-sm hover:bg-indigo-600" (click)="restart()">
+        Restart
+      </button>
+      <a class="text-xl text-red-700 text-center underline underline-offset-2" href="https://youtube.com/CodeWithAhsan">Code With Ahsan</a>
     </div>
   </ng-container>
 </ng-container>
