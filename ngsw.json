@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1641744348219,
+  "timestamp": 1641744403256,
   "index": "/ng-2048/index.html",
   "assetGroups": [
     {
@@ -54,7 +54,7 @@
     "/ng-2048/assets/icons/icon-96x96.png": "3914125a4b445bf111c5627875fc190f560daa41",
     "/ng-2048/assets/meta.png": "48d826d2196b861522cbb42fc792f9a5cac83d9d",
     "/ng-2048/favicon.ico": "22f6a4a3bcaafafb0254e0f2fa4ceb89e505e8b2",
-    "/ng-2048/index.html": "31a5b16242c6cd8ec484e2a7a128d636cd16ba65",
+    "/ng-2048/index.html": "33c72e2c05f3f8424784dfb9abb6db583cb926ed",
     "/ng-2048/main.380b021f5dd929c7.js": "beed0ce4177726c06460c7727e1fbd8ac283274d",
     "/ng-2048/manifest.webmanifest": "71300518fefb078ba681deec1be856b8f725ed9c",
     "/ng-2048/polyfills.0520f42eb5cf040b.js": "420ccaec5610c2ff2270b752bab5e67eb0fe8158",
