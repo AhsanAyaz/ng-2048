@@ -2,62 +2,81 @@ import { Injectable } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
 import Tile from './tile';
 
+export enum GameStates {
+  INITIALIZED = 'intialized',
+  WIN = 'win',
+  LOSE = 'lose',
+}
+
 export interface GameState {
   /** The tiles state. */
   grid: Tile[][];
   /** The current score */
   score: number;
+
+  gameState: GameStates;
 }
+
+const INITIAL_STATE: GameState = {
+  score: 0,
+  grid: new Array(4).fill(0).map((_, rowIndex) =>
+    new Array(4).fill(0).map((_, colIndex) => {
+      return new Tile(0, {
+        position: { row: rowIndex, col: colIndex },
+      });
+    })
+  ),
+  gameState: GameStates.INITIALIZED,
+};
 @Injectable({
   providedIn: 'root',
 })
 export class GameStore extends ComponentStore<GameState> {
   constructor() {
     // set defaults
-    super({
-      score: 0,
-      grid: new Array(4).fill(0).map((_, rowIndex) =>
-        new Array(4).fill(0).map((_, colIndex) => {
-          return new Tile(0, {
-            position: { row: rowIndex, col: colIndex },
-          });
-        })
-      ),
-    });
+    super(INITIAL_STATE);
+  }
+
+  restart() {
+    this.setState(INITIAL_STATE);
   }
 
   private transpose = (m: Tile[][]) =>
-    m[0].map((x, i) =>
+    m[0].map((_, i) =>
       m.map((x) => {
         const tile = x[i];
         return new Tile(tile.value, { ...tile.meta });
       })
     );
 
-  private coordinatesMatch = (
-    from: { row: number; col: number },
-    to: { row: number; col: number }
-  ) => {
-    return from?.row === to.row && from?.col === to.col;
-  };
-
   // *********** Updaters *********** //
 
-  readonly setScore = this.updater((state, value: number) => ({
+  readonly setGameState = this.updater((state, value: GameStates) => ({
     ...state,
-    score: state.score < value ? value : state.score || 0,
+    gameState: value,
   }));
+
+  readonly setScore = this.updater((state, value: number) => {
+    if (value === 2048) {
+      this.setGameState(GameStates.WIN);
+    }
+    return {
+      ...state,
+      score: state.score < value ? value : state.score || 0,
+    };
+  });
 
   readonly generateRandomNumber = this.updater((state) => {
     const emptyTiles: Tile[] = [];
-    state.grid.forEach((row, rowIndex) => {
-      row.forEach((tile, colIndex) => {
+    state.grid.forEach((row) => {
+      row.forEach((tile) => {
         if (tile.value === 0) {
           emptyTiles.push(tile);
         }
       });
     });
     if (emptyTiles.length === 0) {
+      this.setGameState(GameStates.LOSE);
       return state;
     }
     const randomIndex = Math.floor(Math.random() * emptyTiles.length);
@@ -126,6 +145,7 @@ export class GameStore extends ComponentStore<GameState> {
               },
             });
             this.setScore(newTile.value);
+            // this.setScore(2048);
             colIndex = nextColIndex;
           }
           break;
@@ -211,9 +231,9 @@ export class GameStore extends ComponentStore<GameState> {
 
   readonly grid$ = this.select(({ grid }) => grid);
 
-  readonly score$ = this.select(({ score }) => {
-    return score;
-  });
+  readonly score$ = this.select(({ score }) => score);
+
+  readonly gameState$ = this.select(({ gameState }) => gameState);
 
   readonly tiles$ = this.select(({ grid }) => {
     const tiles: Tile[] = [];
@@ -227,10 +247,4 @@ export class GameStore extends ComponentStore<GameState> {
     });
     return tiles;
   });
-
-  // ViewModel of Paginator component
-  readonly vm$ = this.select(this.state$, (state) => ({
-    score: state.score,
-    grid: state.grid,
-  }));
 }

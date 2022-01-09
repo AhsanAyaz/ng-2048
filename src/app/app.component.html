@@ -1,54 +1,85 @@
-<div class="w-full h-full flex flex-col justify-center items-center">
-  <div class="flex flex-col mb-4">
-    <span class="text-indigo-500 text-4xl text-center">2048 Game</span>
-  </div>
-  <div class="score">
-    <div class="text-2xl">
-      Score : {{(vm$ | async)?.score}}
-    </div>
-  </div>
-  <div class="game w-[312px] h-[312px] relative">
-    <div class="grid-container absolute z-10">
-      <div class="row grid grid-cols-4" *ngFor="let row of (vm$ | async)?.grid; let rowIndex = index; trackBy: trackByFn">
-        <div
-          class="col w-12 h-12 flex items-center justify-center border border-black"
-          *ngFor="let col of row; let colIndex = index; trackBy: trackByFn">
-          <div class="text-2xl">
-            &nbsp;
+<a
+  class="fixed top-0 right-0 m-4 z-30"
+  href="https://github.com/code-with-ahsan/ng-2048"
+  target="_blank"
+  rel="noreferrer noopener">
+  <img
+  src="https://img.shields.io/github/stars/code-with-ahsan/ng-2048?style=social" alt="star the repo">
+</a>
+<canvas class="w-full h-full absolute z-10"></canvas>
+<ng-container *ngIf="gameState$ | async as gameState">
+  <ng-container [ngSwitch]="gameState">
+    <div class="w-full h-full flex flex-col justify-center items-center relative z-20">
+      <div class="flex flex-col mb-1">
+        <span class="text-indigo-500 text-4xl text-center">2048 Game</span>
+      </div>
+      <!-- Game Screen (default) -->
+      <div *ngSwitchDefault class="score">
+        <div class="text-2xl">
+          Score : {{(score$ | async)}}
+        </div>
+      </div>
+      <div *ngSwitchDefault  class="game w-[312px] h-[312px] relative">
+        <div class="grid-container absolute z-10">
+          <div class="row grid grid-cols-4" *ngFor="let row of (grid$ | async); let rowIndex = index; trackBy: trackByFn">
+            <div
+              class="col w-12 h-12 rounded flex items-center justify-center border border-black"
+              *ngFor="let col of row; let colIndex = index; trackBy: trackByFn">
+              <div class="text-2xl">
+                &nbsp;
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="tiles absolute z-20">
+          <div
+            *ngFor="let tile of (tiles$ | async); trackBy: tileTrackByFn"
+            class="w-12 h-12 flex rounded items-center justify-center border border-black tile {{'tile-position-' + (tile.meta.position.row + 0) + '-' + (tile.meta.position.col + 0)}}"
+            [class.bg-gray-100]="tile.value === 2"
+            [class.bg-orange-100]="tile.value === 4"
+            [class.bg-orange-200]="tile.value === 8"
+            [class.bg-orange-300]="tile.value === 16"
+            [class.bg-orange-400]="tile.value === 32"
+            [class.bg-orange-500]="tile.value === 64"
+            [class.bg-orange-600]="tile.value === 128"
+            [class.bg-orange-700]="tile.value === 256"
+            [class.bg-orange-800]="tile.value === 512"
+            [class.bg-orange-900]="tile.value === 1024"
+            [class.tile-merged]="tile.meta.merged"
+            [class.tile-appear]="tile.meta.isNew">
+            <div class="text-2xl">
+              {{tile.value}}
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    <div class="tiles absolute z-20">
-      <div
-        *ngFor="let tile of (tiles$ | async); trackBy: tileTrackByFn"
-        class="w-12 h-12 flex items-center justify-center border border-black tile {{'tile-position-' + (tile.meta.position.row + 0) + '-' + (tile.meta.position.col + 0)}}"
-        [class.bg-gray-100]="tile.value === 2"
-        [class.bg-orange-100]="tile.value === 4"
-        [class.bg-orange-200]="tile.value === 8"
-        [class.bg-orange-300]="tile.value === 16"
-        [class.bg-orange-400]="tile.value === 32"
-        [class.bg-orange-500]="tile.value === 64"
-        [class.bg-orange-600]="tile.value === 128"
-        [class.bg-orange-700]="tile.value === 256"
-        [class.bg-orange-800]="tile.value === 512"
-        [class.bg-orange-900]="tile.value === 1024"
-        [class.tile-merged]="tile.meta.merged"
-        [class.tile-appear]="tile.meta.isNew">
-        <div class="text-2xl">
-          {{tile.value}}
+      <!-- Win Screen -->
+      <div *ngSwitchCase="gameStates.WIN">
+        <div class="text-5xl text-green-700 text-center">
+          You Win!
         </div>
+        <div class="text-4xl text-green-600 text-center">
+          Score : {{(score$ | async)}}
+        </div>
+        <button class="w-full p-1 rounded bg-indigo-500 text-white text-2xl hover:bg-indigo-600" (click)="restart()">
+          Restart
+        </button>
+      </div>
+      <!-- Lose Screen -->
+      <div *ngSwitchCase="gameStates.LOSE">
+        <div class="text-5xl text-red-700 text-center">
+          Try again!
+        </div>
+        <div class="text-4xl text-red-600 text-center">
+          Score : {{(score$ | async)}}
+        </div>
+        <button class="w-full p-1 rounded bg-indigo-500 text-white text-2xl hover:bg-indigo-600" (click)="restart()">
+          Restart
+        </button>
+      </div>
+      <div class="mt-4">
+        <a class="text-xl text-red-700 text-center underline underline-offset-2" href="https://youtube.com/CodeWithAhsan">Code With Ahsan</a>
       </div>
     </div>
-  </div>
-  <div class="mt-4">
-    <a class="text-xl text-red-700 text-center underline underline-offset-2" href="https://youtube.com/CodeWithAhsan">Code With Ahsan</a>
-  </div>
-
-  <!-- <div class="flex">
-    <button class="m-2 px-2 bg-purple-300 rounded-lg text-center cursor-pointer hover:opacity-80" (click)="moveLeft()">Move Left</button>
-    <button class="m-2 px-2 bg-purple-300 rounded-lg text-center cursor-pointer hover:opacity-80" (click)="moveRight()">Move Right</button>
-    <button class="m-2 px-2 bg-purple-300 rounded-lg text-center cursor-pointer hover:opacity-80" (click)="moveTop()">Move Top</button>
-    <button class="m-2 px-2 bg-purple-300 rounded-lg text-center cursor-pointer hover:opacity-80" (click)="moveBottom()">Move Bottom</button>
-  </div> -->
-</div>
+  </ng-container>
+</ng-container>
