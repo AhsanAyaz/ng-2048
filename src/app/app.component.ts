@@ -10,6 +10,7 @@ import * as confetti from 'canvas-confetti';
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit {
+  infoOpen = false;
   rows = 4;
   cols = 4;
   grid: Array<Array<number>> = [];
@@ -40,6 +41,10 @@ export class AppComponent implements OnInit {
 
   onWin() {
     this.showConfetti();
+  }
+
+  toggleInfo() {
+    this.infoOpen = !this.infoOpen;
   }
 
   async showConfetti() {

@@ -84,3 +84,15 @@
     </div>
   </ng-container>
 </ng-container>
+<div
+  class="transition-all info-container fixed h-full z-40 flex items-center top-0 bottom-0 m-auto"
+  [ngClass]="{'-right-[215px]': !infoOpen}"
+  [class.right-0]="infoOpen">
+  <div (click)="toggleInfo();" class="rounded-sm info-button cursor-pointer hover:bg-slate-800 text-center bg-indigo-600 mr-[10px] py-0.5 px-2 text-xs text-white h-4">
+    info
+  </div>
+  <div class="rounded shadow-md bg-white border w-[210px] p-2">
+    Use the arrow keys or the swipe gestures to move the blocks.
+    Combine the blocks with the same number to merge them. Score a <b class="text-indigo-600">2048</b> tile to win.
+  </div>
+</div>
