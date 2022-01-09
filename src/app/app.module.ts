@@ -8,6 +8,8 @@ import {
   HAMMER_GESTURE_CONFIG,
   HammerModule,
 } from '@angular/platform-browser';
+import { ServiceWorkerModule } from '@angular/service-worker';
+import { environment } from '../environments/environment';
 
 class HammerConfig extends HammerGestureConfig {
   override overrides = <any>{
@@ -17,7 +19,12 @@ class HammerConfig extends HammerGestureConfig {
 
 @NgModule({
   declarations: [AppComponent],
-  imports: [BrowserModule, BrowserAnimationsModule, HammerModule],
+  imports: [BrowserModule, BrowserAnimationsModule, HammerModule, ServiceWorkerModule.register('ngsw-worker.js', {
+  enabled: environment.production,
+  // Register the ServiceWorker as soon as the app is stable
+  // or after 30 seconds (whichever comes first).
+  registrationStrategy: 'registerWhenStable:30000'
+})],
   providers: [
     {
       provide: HAMMER_GESTURE_CONFIG,
