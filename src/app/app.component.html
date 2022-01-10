@@ -85,14 +85,16 @@
   </ng-container>
 </ng-container>
 <div
-  class="transition-all info-container fixed h-full z-40 flex items-center top-0 bottom-0 m-auto"
+  (click)="toggleInfo();"
+  class="transition-all info-container fixed h-full z-40 flex items-start pt-14 md:pt-0 md:items-center top-0 bottom-0"
   [ngClass]="{'-right-[215px]': !infoOpen}"
   [class.right-0]="infoOpen">
-  <div (click)="toggleInfo();" class="rounded-sm info-button cursor-pointer hover:bg-slate-800 text-center bg-indigo-600 mr-[10px] py-0.5 px-2 text-xs text-white h-4">
-    info
+  <div class="absolute h-max -left-16 top-14 md:top-0 md:bottom-0 m-auto rounded-sm info-button cursor-pointer hover:bg-slate-800 text-center bg-indigo-600 mr-[10px] py-0.5 px-2 text-xs text-white">
+    How to play
   </div>
   <div class="rounded shadow-md bg-white border w-[210px] p-2">
-    Use the arrow keys or the swipe gestures to move the blocks.
-    Combine the blocks with the same number to merge them. Score a <b class="text-indigo-600">2048</b> tile to win.
+    Use the arrow keys or the swipe gestures to move the tiles.
+    Combine the tiles with the same numbers to merge them. Score a <b class="text-indigo-600">2048</b> tile to win.
   </div>
 </div>
+<div *ngIf="infoOpen" (click)="toggleInfo()" class="fixed top-0 left-0 bg-slate-800 bg-opacity-50 z-30 h-full w-full"></div>
