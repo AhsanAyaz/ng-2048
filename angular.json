@@ -116,6 +116,5 @@
         }
       }
     }
-  },
-  "defaultProject": "ng-2048"
+  }
 }
