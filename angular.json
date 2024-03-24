@@ -78,10 +78,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "ng-2048:build:production"
+              "buildTarget": "ng-2048:build:production"
             },
             "development": {
-              "browserTarget": "ng-2048:build:development"
+              "buildTarget": "ng-2048:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -89,7 +89,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "ng-2048:build"
+            "buildTarget": "ng-2048:build"
           }
         },
         "test": {
