@@ -1,5 +1,8 @@
 # ng-2048
 
+## About the game
+A new rendition of the classic [2048 game](https://play2048.co/) using Angular, Typescript, Tailwind CSS and a bit of 💗
+
 
 ## Demo
 <a href="https://code-with-ahsan.github.io/ng-2048">
@@ -8,8 +11,6 @@ https://code-with-ahsan.github.io/ng-2048
 
 <br>
 
-## About the game
-A new rendition of the classic [2048 game](https://play2048.co/) using Angular, Typescript, Tailwind CSS and a bit of 💗
 
 <a href="https://code-with-ahsan.github.io/ng-2048">
 <img src="src/assets/meta.png">
